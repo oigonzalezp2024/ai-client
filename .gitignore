@@ -1,0 +1,125 @@
+# --- Dependencias ---
+/vendor/
+composer.phar
+composer.lock
+composer.bak
+composer-setup.php
+/node_modules/
+package-lock.json
+yarn.lock
+
+# --- Archivos de entorno ---
+.env
+.env.*
+.env.local
+.env.*.local
+.env.backup
+!.env.example
+
+# --- Logs y depuración ---
+/logs/
+*.log
+*.stackdump
+/php_error.log
+/debug.log
+.coverage.xml
+/var/coverage/
+
+# --- Caché, sesiones y archivos temporales ---
+/cache/
+*/tmp/
+/sessions/
+*.cache
+*.compiled
+*.opcache
+/storage/ai_input/*
+!/storage/ai_input/example.txt
+!/storage/ai_input/.gitkeep
+/storage/ai_output/*
+!/storage/ai_output/.gitkeep
+storage/framework/
+storage/cache/
+storage/logs/
+cache/twig/
+
+# --- Archivos de configuración del editor y del sistema ---
+.vim/
+.vscode/
+.vscode/*
+.idea/
+.phpstorm.meta.php
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Archivos de usuario y del shell ---
+.bash_history
+.zshrc
+.htpasswd
+
+# --- Archivos generados por el servidor ---
+/public/uploads/*
+!/public/uploads/.gitkeep
+/public/assets/cache/
+/public/build/
+/public/media/
+/public/sitemaps/
+
+# --- Archivos de pruebas y herramientas de desarrollo ---
+/tests/_output/
+/tests/_support/_generated/
+/coverage/
+/.phpunit.result.cache
+phpunit.xml.dist
+/phpstan.neon
+/phpstan.neon.dist
+/phpcs.xml
+/phpcs.xml.dist
+/psalm.xml
+/psalm-cache/
+
+# --- Archivos temporales ---
+*~
+\#*
+*.bak
+*.tmp
+*.diff
+*.patch
+
+# --- Documentación generada ---
+/docs/_build/
+/docs/html/
+/docs/latex/
+/docs/pdf/
+/docs/generated/
+
+# --- Extensiones de archivos ignoradas ---
+*.dist
+*.dump
+
+# --- Configuración específica (ejemplos) ---
+config/database.php.dist
+config/parameters.yml.dist
+config/secrets.yml.dist
+
+# --- Archivos de Docker ---
+/docker/data/
+
+# --- Claves SSH ---
+id_rsa
+id_rsa.pub
+
+# --- Evitar eliminación de carpetas al estar vacias (ejemplos) ---
+/cache/*
+!/cache/.gitkeep
+/logs/*
+!/logs/.gitkeep
+/sessions/*
+!/sessions/.gitkeep
+/dev/*
+!/dev/.gitkeep
