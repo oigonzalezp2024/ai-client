@@ -1,0 +1,22 @@
+# cambia este archivo de nombre a prompt.txt
+
+Atención:
+Solo genera código valido SQL.
+Genera explicaciones solo dentro del codigo a modo de comentarios validos del lenguaje SQL.
+
+Petición:
+Analiza y mejora la siguiente base de datos.
+
+Base de datos:
+
+DROP DATABASE IF EXISTS control_servicio;
+CREATE DATABASE IF NOT EXISTS control_servicio;
+
+CREATE TABLE control_servicio.clientes (
+  id_cliente int(11) AUTO_INCREMENT PRIMARY KEY,
+  nombre varchar(55) DEFAULT NULL,
+  apellido varchar(55) DEFAULT NULL,
+  telefono int(35) DEFAULT NULL
+);
+
+-- el resto de la base de datos --
