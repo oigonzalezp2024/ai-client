@@ -1,0 +1,26 @@
+/ai-client
+│── /app
+│   └── /Controllers
+│   │   └── .gitkeep
+│   ├── /Core
+│   │   └── AIFileProcessor.php
+│   │   └── DocumentationUpdater.php
+│   │   └── StructureBuilder.php
+│   ├── /Models
+│   │   └── .gitkeep
+│   └── index.php
+│── /docs
+│   └── structureFile.txt
+│── /storage
+│   ├── /ai_input
+│   │   ├── prompt.txt
+│   │   └── example.txt
+│   └── /ai_output
+│       ├── .gitkeep
+│       └── response.php
+│── /vendor
+│── .env
+│── .env.example
+│── .gitignore
+│── composer.json
+└── README.md
