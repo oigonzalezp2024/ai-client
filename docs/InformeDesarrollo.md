@@ -15,5 +15,5 @@ Para mantener un historial detallado de cambios y mejoras, cada actualización o
 - **Archivos afectados:** `DocumentationUpdater.php`
 - [Saber más...](DocumentationUpdater.md)
 
-## [volver](README.md)
+## [volver](../README.md)
 
