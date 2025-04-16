@@ -2,12 +2,10 @@
 
 namespace Modules\ImageUploader\Domain\Validators;
 
+use Modules\ImageUploader\Domain\Contracts\BusinessValidatorInterface;
 use Modules\ImageUploader\Domain\Exceptions\UploadFailedException;
 
-/**
- * Valida reglas de negocio para la subida de imágenes.
- */
-class ImageUploadBusinessValidator
+class ImageUploadBusinessValidator implements BusinessValidatorInterface
 {
     private array $allowedMimeTypes;
     private int $maxFileSize;

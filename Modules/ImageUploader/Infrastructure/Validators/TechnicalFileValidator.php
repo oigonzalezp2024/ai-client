@@ -2,12 +2,13 @@
 
 namespace Modules\ImageUploader\Infrastructure\Validators;
 
+use Modules\ImageUploader\Domain\Contracts\TechnicalValidatorInterface;
 use Modules\ImageUploader\Domain\Exceptions\UploadFailedException;
 
 /**
  * Valida aspectos técnicos mínimos del archivo antes de ser procesado.
  */
-class TechnicalFileValidator
+class TechnicalFileValidator implements TechnicalValidatorInterface
 {
     /**
      * Verifica que el archivo ha sido correctamente subido.
