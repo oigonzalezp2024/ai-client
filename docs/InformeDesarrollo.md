@@ -15,5 +15,9 @@ Para mantener un historial detallado de cambios y mejoras, cada actualización o
 - **Archivos afectados:** `DocumentationUpdater.php`
 - [Saber más...](DocumentationUpdater.md)
 
-## [volver](../README.md)
+#### 2025-04-16 - Implementación del módulo `ImageUploader`
+- **Detalles:** Se creó un sistema robusto y desacoplado para la carga de imágenes, incluyendo validadores técnicos y de negocio, interfaces para subir y eliminar archivos, y pruebas con PHPUnit.
+- **Archivos afectados:** `UploadImageService.php`, `FileUploader.php`, `UploaderInterface.php`, `UploadFailedException.php`, `ImageValidator.php`, `BusinessImageValidator.php`
+- [Saber más...](ImageUploader.md)
 
+## [volver](../README.md)

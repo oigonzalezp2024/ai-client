@@ -1,0 +1,42 @@
+ai-client
+│── /Modules
+│   ├── /ImageUploader        <-- Funcionalidad de subida de imágenes
+│   ├── /Authentication      <-- Módulo para manejar el login, registro y autenticación
+│   ├── /Notifications       <-- Módulo para enviar correos, mensajes de texto, etc.
+│   ├── /Logging             <-- Módulo para manejar los logs del sistema
+│   ├── /FileManagement      <-- Módulo para manejar la subida y gestión de archivos en el sistema
+│   
+│── /BusinessModules         <-- Módulos de negocio específicos
+│   ├── /Orders              <-- Módulo relacionado con la gestión de pedidos
+│   │   ├── /Domain          <-- Entidades, Repositorios, Servicios específicos de pedidos
+│   │   ├── /Application     <-- Servicios de negocio relacionados con pedidos
+│   │   └── /Infrastructure  <-- Implementación de infraestructura relacionada con pedidos
+│   ├── /Products            <-- Módulo relacionado con la gestión de productos
+│   │   ├── /Domain          <-- Entidades, Repositorios, Servicios específicos de productos
+│   │   ├── /Application     <-- Servicios de negocio relacionados con productos
+│   │   └── /Infrastructure  <-- Implementación de infraestructura relacionada con productos
+│   ├── /Customers           <-- Módulo relacionado con la gestión de clientes
+│   │   ├── /Domain          <-- Entidades, Repositorios, Servicios específicos de clientes
+│   │   ├── /Application     <-- Servicios de negocio relacionados con clientes
+│   │   └── /Infrastructure  <-- Implementación de infraestructura relacionada con clientes
+│   ├── /Invoices            <-- Módulo relacionado con la gestión de facturas
+│   │   ├── /Domain          <-- Entidades, Repositorios, Servicios específicos de facturas
+│   │   ├── /Application     <-- Servicios de negocio relacionados con facturas
+│   │   └── /Infrastructure  <-- Implementación de infraestructura relacionada con facturas
+│   └── /Payments            <-- Módulo relacionado con la gestión de pagos
+│       ├── /Domain          <-- Entidades, Repositorios, Servicios específicos de pagos
+│       ├── /Application     <-- Servicios de negocio relacionados con pagos
+│       └── /Infrastructure  <-- Implementación de infraestructura relacionada con pagos
+│   
+│── /app
+│   ├── /Core
+│   │   └── AIFileProcessor.php
+│   │   └── DocumentationUpdater.php
+│   │   └── StructureBuilder.php
+│   ├── /index.php
+│── /vendor
+│── .env
+│── .env.example
+│── .gitignore
+│── composer.json
+│── README.md
