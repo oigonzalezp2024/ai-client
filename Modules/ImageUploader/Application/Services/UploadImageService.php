@@ -3,8 +3,8 @@
 namespace Modules\ImageUploader\Application\Services;
 
 use Modules\ImageUploader\Domain\Contracts\UploaderInterface;
-use Modules\ImageUploader\Domain\Validators\ImageUploadBusinessValidator;
-use Modules\ImageUploader\Infrastructure\Validators\TechnicalFileValidator;
+use Modules\ImageUploader\Domain\Contracts\BusinessValidatorInterface;
+use Modules\ImageUploader\Domain\Contracts\TechnicalValidatorInterface;
 use Modules\ImageUploader\Domain\Exceptions\UploadFailedException;
 
 /**
@@ -12,14 +12,10 @@ use Modules\ImageUploader\Domain\Exceptions\UploadFailedException;
  */
 class UploadImageService
 {
-    private TechnicalFileValidator $technicalValidator;
-    private ImageUploadBusinessValidator $businessValidator;
-    private UploaderInterface $uploader;
-
     public function __construct(
-        TechnicalFileValidator $technicalValidator,
-        ImageUploadBusinessValidator $businessValidator,
-        UploaderInterface $uploader
+        private TechnicalValidatorInterface $technicalValidator,
+        private BusinessValidatorInterface $businessValidator,
+        private UploaderInterface $uploader
     ) {
         $this->technicalValidator = $technicalValidator;
         $this->businessValidator = $businessValidator;

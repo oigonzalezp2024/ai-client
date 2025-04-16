@@ -19,7 +19,8 @@ class LocalFileUploader implements UploaderInterface
     public function upload(array $file, ?string $directory = null): string
     {
         $dir = $this->basePath . ($directory ? trim($directory, '/') . '/' : '');
-
+        
+        // extraer este bloque en una clase aparte.
         if (!is_dir($dir)) {
             if (!mkdir($dir, 0755, true) && !is_dir($dir)) {
                 throw new UploadFailedException("No se pudo crear el directorio: {$dir}");
