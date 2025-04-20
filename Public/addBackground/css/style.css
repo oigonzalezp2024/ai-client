@@ -1,0 +1,83 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #059035;
+  margin: 0;
+  padding: 0;
+  color: #000000;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.hero {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+  /*box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);*/
+}
+
+.hero-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 0 0 30px 30px;
+}
+
+.globo {
+  position: absolute;
+  bottom: -75px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 150px;
+  background-image: url('../assets/images/avatarAdmin.png');/*background-image: url('../assets/images/globo.png');*/
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;/*gap: 2.5rem;*/
+  padding: 4rem 1rem 2rem;
+  justify-items: center;
+  margin-top: 6rem;
+  background-color: aliceblue;
+  border-radius: 25px;
+}
+
+.menu-button {
+  background-color: #1f1f1f;
+  color: #ffffff;
+  font-size: 1.2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 2rem;
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s;
+  width: 250px;
+  max-width: 300px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.menu-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  background-color: #333;
+}
+
+@media (max-width: 600px) {
+  .button-grid {
+    grid-template-columns: 1fr;
+    padding: 2rem 1rem;
+  }
+}
