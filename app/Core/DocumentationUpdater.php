@@ -13,12 +13,18 @@ class DocumentationUpdater {
     private $filePath;
 
     /**
+     * @var string Contenido a guardar.
+     */    
+    private $content;
+
+    /**
      * Constructor de la clase.
      *
      * @param string $filePath Ruta al archivo de documentación.
      */
-    public function __construct($filePath) {
+    public function __construct($filePath, $content = "") {
         $this->filePath = $filePath;
+        $this->content = $content;
     }
 
     /**
@@ -32,7 +38,11 @@ class DocumentationUpdater {
         $originalContent = file_get_contents($this->filePath);
 
         // 2. Leer el nuevo contenido
-        $newContent = file_get_contents($newContentFilePath);
+        if($this->content != ""){
+            $newContent = $this->content;
+        }else{
+            $newContent = file_get_contents($newContentFilePath);
+        }
 
         // 3. Definir los delimitadores
         $startDelimiter = "## Estructura del Proyecto";
