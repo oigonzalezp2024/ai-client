@@ -2,13 +2,13 @@
 
 namespace Modules\ImageUploader\Infrastructure;
 
-use Modules\ImageUploader\Domain\Contracts\UploaderInterface;
+use Modules\ImageUploader\Domain\Contracts\UploaderInterfaceGlobo;
 use Modules\ImageUploader\Domain\Exceptions\UploadFailedException;
 
 /**
  * Implementación concreta de subida de archivos al sistema de archivos.
  */
-class LocalFileUploader implements UploaderInterface
+class LocalFileUploaderGlobo implements UploaderInterfaceGlobo
 {
     public function __construct(
         private string $basePath
@@ -28,7 +28,7 @@ class LocalFileUploader implements UploaderInterface
         }
 
         //$filename = $this->generateFilename($file['name']);
-        $filename = "portadaf_cleanup.png";
+        $filename = "avatarAdmin.png";
         $destination = $dir . $filename;
 
         if (!move_uploaded_file($file['tmp_name'], $destination)) {

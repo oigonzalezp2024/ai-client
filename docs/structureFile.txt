@@ -1,5 +1,5 @@
 /ai-client
-│── /app
+├── /app
 │   └── /Controllers
 │   │   └── .gitkeep
 │   ├── /Core
@@ -9,18 +9,18 @@
 │   ├── /Models
 │   │   └── .gitkeep
 │   └── index.php
-│── /docs
+├── /docs
 │   └── structureFile.txt
-│── /storage
+├── /storage
 │   ├── /ai_input
 │   │   ├── prompt.txt
 │   │   └── example.txt
 │   └── /ai_output
 │       ├── .gitkeep
 │       └── response.php
-│── /vendor
-│── .env
-│── .env.example
-│── .gitignore
-│── composer.json
+├── /vendor
+├── .env
+├── .env.example
+├── .gitignore
+├── composer.json
 └── README.md

@@ -1,4 +1,7 @@
 <?php
+/*
+Pasar por favor esta clase de PHP a python y da un ejemplo de uso.
+*/
 
 namespace App\Core;
 
@@ -63,7 +66,7 @@ class StructureBuilder
                 $this->currentDirectory = $this->rootDirectory;
                 $path = "./" . $this->rootDirectory;
                 $this->createDirectory($path);
-            } elseif (strpos($line, '│── /') === 0) {
+            } elseif (strpos($line, '├── /') === 0) {
                 // Es un directorio dentro del directorio raíz
                 $this->parentDirectory = $this->rootDirectory . $this->cleanLine($line);
                 $this->currentDirectory = $this->parentDirectory;
@@ -82,7 +85,7 @@ class StructureBuilder
                 $this->currentDirectory = $this->childDirectory;
                 $path = "./" . $this->childDirectory;
                 $this->createDirectory($path);
-            } elseif (strpos($line, '│──') === 0 || strpos($line, '└──') === 0) {
+            } elseif (strpos($line, '├──') === 0 || strpos($line, '└──') === 0) {
                 // Es un archivo en el directorio raíz
                 $file = "./" . $this->rootDirectory . "/" . trim($this->cleanLine($line));
                 $this->createFile($file);
@@ -111,9 +114,9 @@ class StructureBuilder
      */
     private function cleanLine(string $line, bool $double = false): string
     {
-        $replacements = ['│── ', '│   ├── ', '│   └── ', '└── ', '│   '];
+        $replacements = ['├── ', '│   ├── ', '│   └── ', '└── ', '│   '];
         if ($double) {
-            $replacements = ['│   │── ', '│   │   ├── ', '│   │   └── ', '│       ├── ', '│       └── ', '│   '];
+            $replacements = ['│   ├── ', '│   │   ├── ', '│   │   └── ', '│       ├── ', '│       └── ', '│   '];
         }
         return str_replace($replacements, '', $line);
     }
