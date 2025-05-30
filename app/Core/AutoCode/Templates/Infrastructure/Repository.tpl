@@ -29,12 +29,20 @@ class {{ENTITY_NAME}}Repository implements {{REPOSITORY_INTERFACE_NAME}}
         return {{ENTITY_NAME}}::fromArray($data);
     }
 
-    public function save({{ENTITY_NAME}} ${{REPO_VAR_NAME}}): {{ENTITY_NAME}}
+    // Nuevo método 'create' para inserciones
+    public function create({{ENTITY_NAME}} ${{REPO_VAR_NAME}}): {{ENTITY_NAME}}
     {
-{{SAVE_METHOD_BODY}}
+{{CREATE_METHOD_BODY}}
     }
 
-    public function delete({{ENTITY_NAME}} ${{REPO_VAR_NAME}}): void
+    // Nuevo método 'update' para actualizaciones, retorna booleano
+    public function update({{ENTITY_NAME}} ${{REPO_VAR_NAME}}): bool
+    {
+{{UPDATE_METHOD_BODY}}
+    }
+
+    // Nuevo método 'delete', recibe un int $id y retorna booleano
+    public function delete({{ID_PHP_TYPE}} $id): bool // El ID es de tipo {{ID_PHP_TYPE}}
     {
 {{DELETE_METHOD_BODY}}
     }
