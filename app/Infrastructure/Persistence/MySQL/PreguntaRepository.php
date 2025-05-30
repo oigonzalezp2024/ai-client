@@ -32,9 +32,14 @@ class PreguntaRepository implements PreguntaRepositoryInterface
     // Nuevo método 'create' para inserciones
     public function create(Pregunta $pregunta): Pregunta
     {
-        $sql = "INSERT INTO preguntas (`su_pregunta`, `persona_id`) VALUES (:su_pregunta, :persona_id)";
+        $sql = "INSERT INTO preguntas (`su_pregunta`, `respuesta`, `persona_id`) VALUES (:su_pregunta, :respuesta, :persona_id)";
         $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':su_pregunta', $pregunta->getSuPregunta());
+            if ($pregunta->getRespuesta() === null) {
+                $stmt->bindValue(':respuesta', null, \PDO::PARAM_NULL);
+            } else {
+                $stmt->bindValue(':respuesta', $pregunta->getRespuesta());
+            }
             $stmt->bindValue(':persona_id', $pregunta->getPersonaId());
         $stmt->execute();
         $pregunta->setIdPregunta((int)$this->connection->lastInsertId());
@@ -44,9 +49,14 @@ class PreguntaRepository implements PreguntaRepositoryInterface
     // Nuevo método 'update' para actualizaciones, retorna booleano
     public function update(Pregunta $pregunta): bool
     {
-        $sql = "UPDATE preguntas SET `su_pregunta` = :su_pregunta, `persona_id` = :persona_id WHERE id_pregunta = :id_pregunta";
+        $sql = "UPDATE preguntas SET `su_pregunta` = :su_pregunta, `respuesta` = :respuesta, `persona_id` = :persona_id WHERE id_pregunta = :id_pregunta";
         $stmt = $this->connection->prepare($sql);
         $stmt->bindValue(':su_pregunta', $pregunta->getSuPregunta());
+            if ($pregunta->getRespuesta() === null) {
+                $stmt->bindValue(':respuesta', null, \PDO::PARAM_NULL);
+            } else {
+                $stmt->bindValue(':respuesta', $pregunta->getRespuesta());
+            }
             $stmt->bindValue(':persona_id', $pregunta->getPersonaId());
         $stmt->bindValue(':id_pregunta', $pregunta->getIdPregunta(), \PDO::PARAM_INT);
         $stmt->execute();

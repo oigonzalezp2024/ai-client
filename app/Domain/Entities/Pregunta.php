@@ -8,12 +8,14 @@ class Pregunta
 {
 private ?int $idPregunta;
     private string $suPregunta;
+    private ?string $respuesta;
     private int $personaId;
 
     public function __construct()
     {
 $this->idPregunta = null;
         $this->suPregunta = '';
+        $this->respuesta = null;
         $this->personaId = 0;
     }
 
@@ -25,6 +27,11 @@ public function getIdPregunta(): ?int
     public function getSuPregunta(): string
     {
         return $this->suPregunta;
+    }
+
+    public function getRespuesta(): ?string
+    {
+        return $this->respuesta;
     }
 
     public function getPersonaId(): int
@@ -40,6 +47,11 @@ public function setIdPregunta(?int $idPregunta): void
     public function setSuPregunta(string $suPregunta): void
     {
         $this->suPregunta = $suPregunta;
+    }
+
+    public function setRespuesta(?string $respuesta): void
+    {
+        $this->respuesta = $respuesta;
     }
 
     public function setPersonaId(int $personaId): void
@@ -59,6 +71,7 @@ public function setIdPregunta(?int $idPregunta): void
 $entity = new self();
         $entity->setIdPregunta(isset($data['id_pregunta']) ? (int)$data['id_pregunta'] : null);
         $entity->setSuPregunta(isset($data['su_pregunta']) ? (string)$data['su_pregunta'] : '');
+        $entity->setRespuesta(isset($data['respuesta']) ? (string)$data['respuesta'] : null);
         $entity->setPersonaId(isset($data['persona_id']) ? (int)$data['persona_id'] : 0);
         return $entity;
     }

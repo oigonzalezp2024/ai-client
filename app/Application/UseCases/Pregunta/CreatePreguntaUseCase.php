@@ -17,10 +17,11 @@ class CreatePreguntaUseCase
         $this->preguntaRepository = $preguntaRepository;
     }
 
-    public function execute(string $suPregunta, int $personaId): Pregunta
+    public function execute(string $suPregunta, ?string $respuesta, int $personaId): Pregunta
     {
         $pregunta = new Pregunta();
         $pregunta->setSuPregunta($suPregunta);
+        $pregunta->setRespuesta($respuesta);
         $pregunta->setPersonaId($personaId);
         
         // ¡CAMBIO CLAVE AQUÍ! Usar create()

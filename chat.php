@@ -1,21 +1,10 @@
 <?php
 
-// C:\xampp\htdocs\web20250528\ai-client_chatbot_2\chat.php
-
-/**
- * Script de procesamiento para los datos del formulario de Persona y Pregunta.
- * Recibe datos POST, utiliza casos de uso, asigna la fecha internamente y redirige con mensajes de estado.
- *
- * @package Web20250528
- * @subpackage AiClientChatbot
- * @author Oscar Gonzalez <oscar.gonzalez@example.com>
- * @version 1.0.2
- * @since 2024-05-28
- */
-
 // Asegúrate de que el autoloader esté disponible
 require_once __DIR__ . '/vendor/autoload.php';
 
+// DECLARACIONES 'use' DEBEN IR AQUÍ (corregido previamente)
+use Dotenv\Dotenv;
 use App\Infrastructure\Persistence\MySQL\DatabaseConnection;
 use App\Infrastructure\Persistence\MySQL\PersonaRepository;
 use App\Infrastructure\Persistence\MySQL\PersonaSearch\PersonaSearch;
@@ -23,107 +12,148 @@ use App\Application\UseCases\Persona\CreatePersonaUseCase;
 use App\Application\UseCases\Persona\GetPersonaByCellphoneUseCase;
 use App\Infrastructure\Persistence\MySQL\PreguntaRepository;
 use App\Application\UseCases\Pregunta\CreatePreguntaUseCase;
+use App\Infrastructure\AI\AIPromptProcessor;
 
-// --- Configuración de la Base de Datos ---
-$dbConfig = [
-    'host' => 'localhost',
-    'name' => 'chatbot', // Asegúrate de que este sea el nombre correcto de tu base de datos
-    'user' => 'root',
-    'password' => '',
+
+// --- IMPORTANTE: Se ha eliminado la configuración de errores y el buffering de salida,
+//     para que puedas ver los errores directamente en el navegador.
+//     Asegúrate de que 'display_errors = On' en tu php.ini para desarrollo. ---
+
+// Establecer la cabecera Content-Type a application/json inmediatamente
+header('Content-Type: application/json');
+
+// Inicializar la respuesta JSON
+$response = [
+    'status' => 'error',
+    'message' => 'Ha ocurrido un error desconocido.',
+    'aiResponse' => ''
 ];
 
-$redirectParams = []; // Para construir los parámetros de la URL de redirección
-$status = 'error';
-$message = 'Ha ocurrido un error desconocido.';
+try {
+    $dotenv = Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
 
-// Solo procesa si la solicitud es POST (viene del formulario)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 1. Obtener y sanear los datos del formulario
-    // IMPORTANTE: Se usa FILTER_UNSAFE_RAW para evitar que los caracteres especiales
-    // como tildes y ñ se conviertan a entidades HTML antes de ser guardados en la DB.
-    // La seguridad contra inyección SQL la proporcionan los Prepared Statements de PDO.
-    $nombre = filter_input(INPUT_POST, 'nombre', FILTER_UNSAFE_RAW); // Cambio aquí
-    $celular = filter_input(INPUT_POST, 'celular', FILTER_UNSAFE_RAW); // Cambio aquí
-    $preguntaTexto = filter_input(INPUT_POST, 'pregunta', FILTER_UNSAFE_RAW); // Cambio aquí
+    // --- Configuración de la Base de Datos ---
+    $dbConfig = [
+        'host' => $_ENV['DB_HOST'] ?? 'localhost',
+        'name' => $_ENV['DB_NAME'] ?? 'chatbot',
+        'user' => $_ENV['DB_USER'] ?? 'root',
+        'password' => $_ENV['DB_PASSWORD'] ?? '',
+    ];
 
-    // La fecha se genera internamente al momento del procesamiento
-    $fecha = date('Y-m-d'); // Obtiene la fecha actual en formato AAAA-MM-DD
+    // --- Configuración de la AI ---
+    $aiApiKey = $_ENV['AI_API_KEY'] ?? null;
+    $aiBaseUri = $_ENV['AI_BASE_URI'] ?? null;
+    $aiModel = $_ENV['AI_MODEL'] ?? null;
 
-    // Rellenar parámetros para el formulario en caso de error o para mantener datos
-    $redirectParams['nombre'] = $nombre;
-    $redirectParams['celular'] = $celular;
-    $redirectParams['pregunta'] = $preguntaTexto;
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // 1. Obtener y sanear los datos del formulario
+        $nombre = filter_input(INPUT_POST, 'nombre', FILTER_UNSAFE_RAW);
+        $celular = filter_input(INPUT_POST, 'celular', FILTER_UNSAFE_RAW);
+        $preguntaTexto = filter_input(INPUT_POST, 'pregunta', FILTER_UNSAFE_RAW);
+        $fecha = date('Y-m-d');
 
-    // 2. Validación básica de datos
-    if (!$nombre || !$celular || !$preguntaTexto) {
-        $message = "Los campos ID Persona, Nombre, Celular y Pregunta son obligatorios. Por favor, complételos.";
-    } else {
-        try {
-            // 3. Conexión a la Base de Datos
-            // Se usa la clase DatabaseConnection que ya configuramos con utf8mb4
-            $dbConnection = new DatabaseConnection(
-                $dbConfig['host'],
-                $dbConfig['name'],
-                $dbConfig['user'],
-                $dbConfig['password']
-            );
-            $pdo = $dbConnection->connect();
-            // PDO::ATTR_ERRMODE, PDO::ATTR_EMULATE_PREPARES y charset=utf8mb4 ya se configuran en DatabaseConnection
-
-            // 4. Lógica de Negocio (Usando Casos de Uso)
-            $personaSearch = new PersonaSearch($pdo);
-            $personaRepository = new PersonaRepository($pdo);
-            $getPersonaByCellphoneUseCase = new GetPersonaByCellphoneUseCase($personaSearch);
-            $createPersonaUseCase = new CreatePersonaUseCase($personaSearch);
-
-            $persona = $getPersonaByCellphoneUseCase->execute($celular);
-
-            $operationMessage = '';
-            if (!$persona) {
-                // Crear nueva persona usando la fecha generada internamente
-                $persona = $createPersonaUseCase->execute(
-                    $nombre,
-                    $celular,
-                    $fecha,
-                    true // Asumiendo que 'true' es para 'isActive'
+        // 2. Validación básica de datos
+        if (!$nombre || !$celular || !$preguntaTexto) {
+            $response['message'] = "Los campos Nombre, Celular y Pregunta son obligatorios. Por favor, complételos.";
+        } else {
+            try {
+                // 3. Conexión a la Base de Datos
+                $dbConnection = new DatabaseConnection(
+                    $dbConfig['host'],
+                    $dbConfig['name'],
+                    $dbConfig['user'],
+                    $dbConfig['password']
                 );
-                $operationMessage .= "Persona con ID {$persona->getIdPersona()} creada exitosamente. ";
-            } else {
-                $operationMessage .= "Persona con ID {$persona->getIdPersona()} ('{$persona->getNombre()}') encontrada. ";
-                // Si la persona ya existe, podrías considerar actualizar sus datos aquí
-                // si el formulario lo permite, o simplemente continuar.
+                $pdo = $dbConnection->connect();
+
+                // 4. Lógica de Negocio (Usando Casos de Uso)
+                $personaSearch = new PersonaSearch($pdo);
+                $personaRepository = new PersonaRepository($pdo);
+                $getPersonaByCellphoneUseCase = new GetPersonaByCellphoneUseCase($personaSearch);
+                $createPersonaUseCase = new CreatePersonaUseCase($personaRepository);
+
+                $persona = $getPersonaByCellphoneUseCase->execute($celular);
+
+                if (!$persona) {
+                    // Crear nueva persona usando la fecha generada internamente
+                    $persona = $createPersonaUseCase->execute(
+                        $nombre,
+                        $celular,
+                        $fecha,
+                        true // Asumiendo que 'true' es para 'isActive'
+                    );
+                }
+
+                // --- PROCESAMIENTO DE LA PREGUNTA CON LA IA ---
+                if (empty($aiApiKey) || empty($aiBaseUri) || empty($aiModel)) {
+                    error_log("Advertencia: Variables de entorno de IA incompletas en chat.php. AI_API_KEY: " . ($aiApiKey ? 'SET' : 'NOT SET') . ", AI_BASE_URI: " . ($aiBaseUri ?? 'NOT SET') . ", AI_MODEL: " . ($aiModel ?? 'NOT SET'));
+                    $response['message'] = "Error interno del servidor: Configuración de IA incompleta.";
+                } else {
+                    try {
+                        $aiProcessor = new AIPromptProcessor($aiApiKey, $aiBaseUri, $aiModel);
+                        $formato = "Responder en español, máximo 249 carácteres:";
+                        $promnt = $formato ." ". $preguntaTexto;
+                        $aiResponseText = $aiProcessor->getAIResponse($promnt);
+                        
+                        // Limpia la respuesta de la IA de cualquier tipo de espacio en blanco (newlines, tabs, multiple spaces)
+                        // y recorta los espacios al inicio/final.
+                        $aiResponseText = trim(preg_replace('/\s+/', ' ', $aiResponseText));
+
+                        $response['status'] = 'success';
+                        $response['message'] = "Respuesta de IA obtenida."; // Mensaje simplificado para la API
+                        $response['aiResponse'] = $aiResponseText;
+
+                    } catch (Exception $e) {
+                        error_log("ERROR AI en chat.php: " . $e->getMessage());
+                        $response['message'] = "Fallo al obtener respuesta de la IA: " . $e->getMessage();
+                        $response['aiResponse'] = "Lo siento, no pude obtener una respuesta en este momento debido a un error de la IA.";
+                        $response['status'] = 'warning'; // O 'error' si lo prefieres
+                    }
+                }
+                // --- FIN PROCESAMIENTO AI ---
+
+                // Guardar la pregunta del usuario y la respuesta de la IA en la base de datos
+                // Esto se hace independientemente del éxito de la IA para registrar la interacción
+                $preguntaRepository = new PreguntaRepository($pdo);
+                $createPreguntaUseCase = new CreatePreguntaUseCase($preguntaRepository);
+                
+                // Asegúrate de que $persona sea un objeto válido con getIdPersona()
+                $personaId = $persona ? $persona->getIdPersona() : null;
+
+                if ($personaId) {
+                    $nuevaPregunta = $createPreguntaUseCase->execute(
+                        $preguntaTexto, // su_pregunta: la pregunta original del usuario
+                        $aiResponseText, // respuesta: la respuesta obtenida de la IA
+                        $personaId
+                    );
+                    // Puedes añadir el ID de la pregunta al response si es útil para el frontend
+                    $response['preguntaId'] = $nuevaPregunta->getIdPregunta();
+                } else {
+                    error_log("Error: No se pudo obtener el ID de la persona para guardar la pregunta.");
+                    // Este error puede sobrescribir un éxito de IA, ajustar la lógica si es necesario
+                    $response['message'] = "Error interno: No se pudo asociar la pregunta a una persona.";
+                    $response['status'] = 'error';
+                }
+
+            } catch (PDOException $e) {
+                error_log("ERROR BD en chat.php: " . $e->getMessage());
+                $response['message'] = "Error de base de datos: " . $e->getMessage();
+            } catch (Exception $e) {
+                error_log("ERROR GENERAL in chat.php: " . $e->getMessage());
+                $response['message'] = "Ocurrió un error inesperado: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine();
             }
-
-            $preguntaRepository = new PreguntaRepository($pdo);
-            $createPreguntaUseCase = new CreatePreguntaUseCase($preguntaRepository);
-
-            $nuevaPregunta = $createPreguntaUseCase->execute(
-                $preguntaTexto,
-                $persona->getIdPersona()
-            );
-
-            // Importante: Aquí el mensaje usa los strings puros (UTF-8), no los escapados.
-            $operationMessage .= "Pregunta '" . $nuevaPregunta->getSuPregunta() . "' asociada a la Persona ID {$persona->getIdPersona()} (Pregunta ID: {$nuevaPregunta->getIdPregunta()}).";
-            $status = 'success';
-            $message = $operationMessage;
-
-        } catch (PDOException $e) {
-            error_log("ERROR BD en chat.php: " . $e->getMessage());
-            $message = "Error de base de datos: " . $e->getMessage() . ". Por favor, verifica la conexión, los permisos y la codificación UTF-8 en la base de datos y en los archivos PHP.";
-        } catch (Exception $e) {
-            error_log("ERROR GENERAL en chat.php: " . $e->getMessage());
-            $message = "Ocurrió un error inesperado: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine();
         }
+    } else {
+        $response['message'] = "Método no permitido. Solo se aceptan solicitudes POST.";
     }
-} else {
-    $message = "Acceso directo no permitido al procesador de formulario. Por favor, use el formulario.";
-    $redirectParams = [];
+} catch (\Throwable $e) { // Captura cualquier error fatal o excepción no manejada
+    error_log("ERROR FATAL en chat.php (fuera del bloque principal): " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
+    $response['status'] = 'error';
+    $response['message'] = "Error crítico del servidor: " . $e->getMessage();
+    $response['aiResponse'] = "Lo siento, un error crítico ha impedido procesar tu solicitud.";
 }
 
-// Preparar parámetros de URL para la redirección
-$redirectParams['status'] = $status;
-$redirectParams['message'] = urlencode($message); // El mensaje se codifica para la URL
-
-$queryString = http_build_query($redirectParams);
-header('Location: index.php?' . $queryString);
-exit();
+// Envía la respuesta JSON
+echo json_encode($response);
+exit(); // Asegura que no se imprima nada más

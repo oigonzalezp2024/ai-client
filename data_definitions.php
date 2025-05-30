@@ -70,6 +70,15 @@ return [
             'default_value' => ''
         ],
         [
+            'field_name' => 'respuesta',
+            'data_type' => 'string',
+            'column_name' => 'respuesta',
+            'is_primary_key' => false,
+            'is_autoincrement' => false,
+            'is_nullable' => true,
+            'default_value' => ''
+        ],
+        [
             'field_name' => 'persona_id',
             'data_type' => 'int',
             'column_name' => 'persona_id',
