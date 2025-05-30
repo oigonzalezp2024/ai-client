@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php">
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         failOnWarning="true"
+         failOnRisky="true">
     <testsuites>
-        <testsuite name="ImageUploader Tests">
-            <directory>./tests</directory>
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
         </testsuite>
-    </testsuites>
+        </testsuites>
+    <php>
+        <env name="DB_HOST" value="localhost"/>
+        <env name="DB_NAME" value="chatbot_test"/> <env name="DB_USER" value="root"/>
+        <env name="DB_PASSWORD" value=""/>
+    </php>
 </phpunit>
