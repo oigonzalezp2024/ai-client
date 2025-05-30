@@ -3,7 +3,7 @@
 namespace App\Core\AutoCode\Root;
 
 use App\Core\AutoCode\Root\CodeConventionConverter;
-use App\Core\AutoCode\Root\DataDefinition;
+use App\Core\AutoCode\Root\DataDefinition; // Asegúrate de que esta clase exista y esté correctamente referenciada.
 
 class InfrastructureCodeGenerator
 {
@@ -37,49 +37,24 @@ class InfrastructureCodeGenerator
         $idDefinition = $definitions[0]; // Asumimos que el primer campo es el ID
         $idField = $idDefinition->getFieldName(); 
         $idPhpType = $idDefinition->getDataType(); // Tipo PHP para el ID (ej: int)
-        $repoVarName = $this->converter->toCamelCase($entityName); // Nombre de la variable de la entidad en el repo (ej: $proveedor)
-        $idMethodName = 'get' . ucfirst($this->converter->toCamelCase($idField)); // Nombre del getter para el ID (ej: getIdProveedor)
-        $idSetMethodName = 'set' . ucfirst($this->converter->toCamelCase($idField)); // Nombre del setter para el ID (ej: setIdProveedor)
+        $repoVarName = $this->converter->toCamelCase($entityName); // Nombre de la variable de la entidad en el repo (ej: $persona)
+        $idMethodName = 'get' . ucfirst($this->converter->toCamelCase($idField)); // Nombre del getter para el ID (ej: getIdPersona)
+        $idSetMethodName = 'set' . ucfirst($this->converter->toCamelCase($idField)); // Nombre del setter para el ID (ej: setIdPersona)
 
-        // --- Construcción de lógica para el método save (INSERT) ---
+        // --- Construcción de lógica para el método create (INSERT) ---
         $fieldsForInsert = [];
         $placeholdersForInsert = [];
-        $bindValuesForInsert = [];
-
-        foreach ($definitions as $index => $definition) {
-            $fieldName = $definition->getFieldName();
-            $camelFieldName = $this->converter->toCamelCase($fieldName);
-            $getMethodName = 'get' . ucfirst($camelFieldName);
-            $dataType = $definition->getDataType();
-
-            // Para INSERT: Omitimos el campo ID si es autoincremental (asumiendo que el primer campo es el ID)
-            if ($index > 0) { 
-                $fieldsForInsert[] = "`{$fieldName}`";
-                $placeholdersForInsert[] = ":{$fieldName}";
-                
-                $bindLine = "\$stmt->bindValue(':" . $fieldName . "', \${$repoVarName}->{$getMethodName}(";
-                if ($dataType === 'bool') {
-                    $bindLine .= "));"; // Se manejará la conversión a int en el repositorio generado
-                } elseif ($definition->isNullable()) {
-                     $bindLine .= ") ?? null, \PDO::PARAM_NULL);"; // Si es nullable, añadir la lógica de null
-                } else {
-                    $bindLine .= "));";
-                }
-                $bindValuesForInsert[] = str_replace("));", "()));", $bindLine); // Ajuste temporal para el bug del paréntesis doble
-            }
-        }
-
-        $fieldsForInsertString = implode(', ', $fieldsForInsert);
-        $placeholdersForInsertString = implode(', ', $placeholdersForInsert);
-        
-        // RE-GENERAR bindValuesForInsertString para más robustez (manual)
         $manualBindValuesForInsert = [];
+
         foreach ($definitions as $index => $definition) {
-            if ($index === 0) continue; // Omitir el ID
+            if ($index === 0) continue; // Omitir el ID para INSERT
             $fieldName = $definition->getFieldName();
             $camelFieldName = $this->converter->toCamelCase($fieldName);
             $getMethodName = 'get' . ucfirst($camelFieldName);
             $dataType = $definition->getDataType();
+            
+            $fieldsForInsert[] = "`{$fieldName}`";
+            $placeholdersForInsert[] = ":{$fieldName}";
             
             if ($dataType === 'bool') {
                 $manualBindValuesForInsert[] = "\$stmt->bindValue(':" . $fieldName . "', (int)\${$repoVarName}->{$getMethodName}(), \PDO::PARAM_INT);";
@@ -89,16 +64,16 @@ class InfrastructureCodeGenerator
                 $manualBindValuesForInsert[] = "\$stmt->bindValue(':" . $fieldName . "', \${$repoVarName}->{$getMethodName}());";
             }
         }
+        $fieldsForInsertString = implode(', ', $fieldsForInsert);
+        $placeholdersForInsertString = implode(', ', $placeholdersForInsert);
         $bindValuesForInsertString = implode("\n            ", $manualBindValuesForInsert);
 
-
-        // --- Construcción de lógica para el método save (UPDATE) ---
+        // --- Construcción de lógica para el método update (UPDATE) ---
         $updateSetParts = [];
         $bindValuesForUpdate = [];
         foreach ($definitions as $index => $definition) {
-            // ¡IMPORTANTE! Omitimos el ID para la cláusula SET en UPDATE, solo se usa en el WHERE
-            if ($index === 0) continue; 
-
+            if ($index === 0) continue; // Omitir el ID para la cláusula SET
+            
             $fieldName = $definition->getFieldName();
             $camelFieldName = $this->converter->toCamelCase($fieldName);
             $getMethodName = 'get' . ucfirst($camelFieldName);
@@ -106,7 +81,6 @@ class InfrastructureCodeGenerator
             
             $updateSetParts[] = "`{$fieldName}` = :{$fieldName}";
 
-            // RE-GENERAR bindValuesForUpdate (manual)
             if ($dataType === 'bool') {
                 $bindValuesForUpdate[] = "\$stmt->bindValue(':" . $fieldName . "', (int)\${$repoVarName}->{$getMethodName}(), \PDO::PARAM_INT);";
             } elseif ($definition->isNullable()) {
@@ -119,31 +93,37 @@ class InfrastructureCodeGenerator
         $bindValuesForUpdateString = implode("\n            ", $bindValuesForUpdate);
 
 
-        $saveMethodBody = <<<PHP
-        if (\${$repoVarName}->{$idMethodName}() === null) {
-            // Insertar
-            \$sql = "INSERT INTO {$tableName} ({$fieldsForInsertString}) VALUES ({$placeholdersForInsertString})";
-            \$stmt = \$this->connection->prepare(\$sql);
-            {$bindValuesForInsertString}
-            \$stmt->execute();
-            \${$repoVarName}->{$idSetMethodName}((int)\$this->connection->lastInsertId());
-        } else {
-            // Actualizar
-            \$sql = "UPDATE {$tableName} SET {$updateSetString} WHERE {$idField} = :{$idField}";
-            \$stmt = \$this->connection->prepare(\$sql);
-            {$bindValuesForUpdateString}
-            \$stmt->bindValue(':{$idField}', \${$repoVarName}->{$idMethodName}(), \PDO::PARAM_INT); // Enlazar el ID para la cláusula WHERE como INT
-            \$stmt->execute();
-        }
+        // ***** CAMBIO AQUÍ: Definición del método create *****
+        // Es mejor tener 'create' y 'update' separados en el repositorio si los Use Cases los usan así.
+        // Si tu CreatePersonaUseCase llama a un método 'save' que inserta, mantén el `saveMethodBody` y el `createMethodBody` separado.
+        // Dado que el test de integración llama a `create` directamente, necesitamos un `create` separado.
+        $createMethodBody = <<<PHP
+        \$sql = "INSERT INTO {$tableName} ({$fieldsForInsertString}) VALUES ({$placeholdersForInsertString})";
+        \$stmt = \$this->connection->prepare(\$sql);
+        {$bindValuesForInsertString}
+        \$stmt->execute();
+        \${$repoVarName}->{$idSetMethodName}((int)\$this->connection->lastInsertId());
         return \${$repoVarName};
 PHP;
 
-        // --- Construcción de lógica para el método delete ---
+        // ***** CAMBIO AQUÍ: Definición del método update *****
+        // Este es el método que será llamado por UpdatePersonaUseCase
+        $updateMethodBody = <<<PHP
+        \$sql = "UPDATE {$tableName} SET {$updateSetString} WHERE {$idField} = :{$idField}";
+        \$stmt = \$this->connection->prepare(\$sql);
+        {$bindValuesForUpdateString}
+        \$stmt->bindValue(':{$idField}', \${$repoVarName}->{$idMethodName}(), \PDO::PARAM_INT);
+        \$stmt->execute();
+        return \$stmt->rowCount() > 0; // CRÍTICO: Devolver booleano
+PHP;
+
+        // ***** CAMBIO AQUÍ: Definición del método delete *****
+        // El método delete del repositorio debe recibir un INT
         $deleteMethodBody = <<<PHP
         \$stmt = \$this->connection->prepare("DELETE FROM {$tableName} WHERE {$idField} = :id");
-        \$idToDelete = \${$repoVarName}->{$idMethodName}();
-        \$stmt->bindParam(':id', \$idToDelete, \PDO::PARAM_INT);
+        \$stmt->bindParam(':id', \$id, \PDO::PARAM_INT); // bindParam con el ID recibido
         \$stmt->execute();
+        return \$stmt->rowCount() > 0; // CRÍTICO: Devolver booleano
 PHP;
 
         $replacements = [
@@ -158,8 +138,12 @@ PHP;
             '{{ID_FIELD}}' => $idField,
             '{{ID_PHP_TYPE}}' => $idPhpType,
             '{{REPO_VAR_NAME}}' => $repoVarName,
-            '{{SAVE_METHOD_BODY}}' => $saveMethodBody,
+            // ***** CAMBIO AQUÍ: Nuevos placeholders para los métodos separados *****
+            '{{CREATE_METHOD_BODY}}' => $createMethodBody,
+            '{{UPDATE_METHOD_BODY}}' => $updateMethodBody,
             '{{DELETE_METHOD_BODY}}' => $deleteMethodBody,
+            // NOTA: Si aún tienes el placeholder {{SAVE_METHOD_BODY}} en tu plantilla,
+            // deberías eliminarlo de la plantilla o reemplazarlo por un string vacío si ya no lo usas.
         ];
 
         return str_replace(array_keys($replacements), array_values($replacements), $template);
