@@ -6,7 +6,8 @@ use App\Core\AutoCode\Root\DataLoader;
 use App\Core\AutoCode\Root\CodeGenerator;
 use App\Core\AutoCode\Root\InfrastructureCodeGenerator;
 use App\Core\AutoCode\Root\ApplicationCodeGenerator;
-use App\Core\AutoCode\Root\CodeConventionConverter; // ¡Importar la clase!
+use App\Core\AutoCode\Root\CodeConventionConverter;
+use App\Core\AutoCode\Root\DataDefinition; // Asegúrate de que DataDefinition también esté importada
 
 class CodeGenerationOrchestrator
 {
@@ -14,7 +15,7 @@ class CodeGenerationOrchestrator
     private CodeGenerator $entityGenerator;
     private InfrastructureCodeGenerator $infrastructureGenerator;
     private ApplicationCodeGenerator $applicationGenerator;
-    private CodeConventionConverter $converter; // ¡Nueva propiedad!
+    private CodeConventionConverter $converter;
 
     private string $outputDirDomain;
     private string $outputDirInfrastructure;
@@ -31,7 +32,7 @@ class CodeGenerationOrchestrator
         CodeGenerator $entityGenerator,
         InfrastructureCodeGenerator $infrastructureGenerator,
         ApplicationCodeGenerator $applicationGenerator,
-        CodeConventionConverter $converter, // ¡Nuevo parámetro en el constructor!
+        CodeConventionConverter $converter,
         string $outputDirBase,
         string $domainEntitiesNamespace,
         string $infrastructureNamespace,
@@ -42,7 +43,7 @@ class CodeGenerationOrchestrator
         $this->entityGenerator = $entityGenerator;
         $this->infrastructureGenerator = $infrastructureGenerator;
         $this->applicationGenerator = $applicationGenerator;
-        $this->converter = $converter; // ¡Asignar la nueva propiedad!
+        $this->converter = $converter;
 
         $this->outputDirDomain = $outputDirBase . 'app/Domain/Entities/';
         $this->outputDirInfrastructure = $outputDirBase . 'app/Infrastructure/Persistence/MySQL/';
@@ -99,23 +100,22 @@ class CodeGenerationOrchestrator
 
             // --- Generar Interfaz de Repositorio de Dominio ---
             $repositoryInterfaceName = "{$entityName}RepositoryInterface";
-            // ¡LÍNEA CORREGIDA! Usamos el converter directamente
-            $repoVarName = $this->converter->toCamelCase($entityName); 
+            $repoVarName = $this->converter->toCamelCase($entityName);
 
-            // Obtener el tipo de PHP para el ID desde la primera definición de datos
+            /** @var DataDefinition $idDefinition */
             $idDefinition = $definitions[0] ?? null;
-            // Asegurarse de que el tipo sea 'int' si la definición lo indica.
-            // Esto fue el origen del error de compatibilidad
-            $idPhpTypeForInterface = ($idDefinition) ? $idDefinition->getDataType() : 'string';
-            
+            $idPhpTypeForInterface = ($idDefinition) ? $idDefinition->getDataType() : 'int';
+
             $repositoryInterfaceCode = "<?php\n\n";
             $repositoryInterfaceCode .= "namespace {$this->domainRepositoriesNamespace};\n\n";
             $repositoryInterfaceCode .= "use {$this->domainEntitiesNamespace}\\{$entityName};\n\n";
             $repositoryInterfaceCode .= "interface {$repositoryInterfaceName}\n";
             $repositoryInterfaceCode .= "{\n";
             $repositoryInterfaceCode .= "    public function findById({$idPhpTypeForInterface} \$id): ?{$entityName};\n";
-            $repositoryInterfaceCode .= "    public function save({$entityName} \${$repoVarName}): {$entityName};\n";
-            $repositoryInterfaceCode .= "    public function delete({$entityName} \${$repoVarName}): void;\n";
+            // ¡FIRMAS CORREGIDAS para la interfaz!
+            $repositoryInterfaceCode .= "    public function create({$entityName} \${$repoVarName}): {$entityName};\n";
+            $repositoryInterfaceCode .= "    public function update({$entityName} \${$repoVarName}): bool;\n";
+            $repositoryInterfaceCode .= "    public function delete({$idPhpTypeForInterface} \$id): bool;\n";
             $repositoryInterfaceCode .= "    public function findAll(): array;\n";
             $repositoryInterfaceCode .= "}\n";
 

@@ -12,7 +12,6 @@ class ApplicationCodeGenerator
     private string $domainEntitiesNamespace;
     private string $domainRepositoriesNamespace;
 
-    // Constructor con los namespaces inyectados correctamente
     public function __construct(CodeConventionConverter $converter, string $domainEntitiesNamespace, string $domainRepositoriesNamespace)
     {
         $this->converter = $converter;
@@ -24,7 +23,7 @@ class ApplicationCodeGenerator
      * Genera casos de uso a nivel de aplicación para una entidad dada.
      *
      * @param DataDefinition[] $definitions Array de objetos DataDefinition para la entidad.
-     * @param string $entityName El nombre de la entidad (ej: 'Proveedor').
+     * @param string $entityName El nombre de la entidad (ej: 'Persona').
      * @param string $applicationUseCasesNamespace El namespace para los casos de uso generados.
      * @return array Un array asociativo de nombres de clases generadas y su código.
      */
@@ -47,13 +46,14 @@ class ApplicationCodeGenerator
         }
 
         $useCases = [];
-        $repoVarName = $this->converter->toCamelCase($entityName) . 'Repository'; // Ej: 'proveedorRepository'
-        $entityVarName = $this->converter->toCamelCase($entityName); // Ej: 'proveedor'
+        $repoVarName = $this->converter->toCamelCase($entityName) . 'Repository'; // Ej: 'personaRepository'
+        $entityVarName = $this->converter->toCamelCase($entityName); // Ej: 'persona'
 
         /** @var DataDefinition $idDefinition */
         $idDefinition = $definitions[0]; // Asumimos que el primer campo es el ID
         $idField = $idDefinition->getFieldName();
         $idPhpType = $idDefinition->getDataType();
+        $idGetterMethod = 'get' . ucfirst($this->converter->toCamelCase($idField)); // Ej: getIdPersona
 
         // Obtener campos no-ID para constructor/setters
         $nonIdDefinitions = array_slice($definitions, 1); // Saltar el campo ID
@@ -69,11 +69,10 @@ class ApplicationCodeGenerator
                 $paramTypeHint = '?' . $paramType;
             }
             $constructorParams[] = "{$paramTypeHint} \${$paramName}";
-            // ¡¡¡LÍNEA CORREGIDA!!! Usar $entityVarName en lugar de $entity y el escape correcto.
             $entitySetters[] = "\${$entityVarName}->{$setterName}(\${$paramName});";
         }
         $constructorParamsString = implode(', ', $constructorParams);
-        $entitySettersString = implode("\n        ", $entitySetters); // Asegura la indentación correcta
+        $entitySettersString = implode("\n        ", $entitySetters);
 
         // --- Caso de Uso Create ---
         $createUseCaseClassName = "Create{$entityName}UseCase";
@@ -84,6 +83,9 @@ namespace {$applicationUseCasesNamespace}\\{$entityName};
 
 use {$this->domainEntitiesNamespace}\\{$entityName};
 use {$this->domainRepositoriesNamespace}\\{$entityName}RepositoryInterface;
+// Puedes necesitar importar una clase de excepción si el repositorio puede lanzarla,
+// o si el caso de uso la lanza por sí mismo.
+// use Exception; 
 
 class {$createUseCaseClassName}
 {
@@ -99,7 +101,8 @@ class {$createUseCaseClassName}
         \${$entityVarName} = new {$entityName}();
         {$entitySettersString}
         
-        return \$this->{$repoVarName}->save(\${$entityVarName});
+        // ¡CAMBIO CLAVE AQUÍ! Usar create()
+        return \$this->{$repoVarName}->create(\${$entityVarName});
     }
 }
 PHP;
@@ -141,6 +144,7 @@ namespace {$applicationUseCasesNamespace}\\{$entityName};
 
 use {$this->domainEntitiesNamespace}\\{$entityName};
 use {$this->domainRepositoriesNamespace}\\{$entityName}RepositoryInterface;
+use Exception; // Necesario para lanzar la excepción
 
 class {$updateUseCaseClassName}
 {
@@ -153,7 +157,13 @@ class {$updateUseCaseClassName}
 
     public function execute({$entityName} \${$entityVarName}): {$entityName}
     {
-        return \$this->{$repoVarName}->save(\${$entityVarName});
+        // ¡CAMBIO CLAVE AQUÍ! Usar update() y manejar el retorno booleano
+        \$updated = \$this->{$repoVarName}->update(\${$entityVarName});
+
+        if (!\$updated) {
+            throw new Exception("No se pudo actualizar la {$entityName}.");
+        }
+        return \${$entityVarName}; // Retorna la entidad actualizada si todo fue bien
     }
 }
 PHP;
@@ -166,8 +176,9 @@ PHP;
 
 namespace {$applicationUseCasesNamespace}\\{$entityName};
 
-use {$this->domainEntitiesNamespace}\\{$entityName};
+use {$this->domainEntitiesNamespace}\\{$entityName}; // Podría necesitarse para el tipo de parámetro
 use {$this->domainRepositoriesNamespace}\\{$entityName}RepositoryInterface;
+use Exception; // Necesario para lanzar la excepción
 
 class {$deleteUseCaseClassName}
 {
@@ -178,9 +189,14 @@ class {$deleteUseCaseClassName}
         \$this->{$repoVarName} = \${$repoVarName};
     }
 
-    public function execute({$entityName} \${$entityVarName}): void
+    public function execute({$entityName} \${$entityVarName}): void // El Use Case recibe la entidad completa
     {
-        \$this->{$repoVarName}->delete(\${$entityVarName});
+        // ¡CAMBIO CLAVE AQUÍ! Pasar el ID al método delete() del repositorio y manejar el retorno booleano
+        \$deleted = \$this->{$repoVarName}->delete(\${$entityVarName}->{$idGetterMethod}());
+
+        if (!\$deleted) {
+            throw new Exception("No se pudo eliminar la {$entityName}.");
+        }
     }
 }
 PHP;
@@ -193,9 +209,8 @@ PHP;
 
 namespace {$applicationUseCasesNamespace}\\{$entityName};
 
-use {$this->domainEntitiesNamespace}\\{$entityName}; // Necesario si el tipo de hint de array usa la clase de la entidad
+use {$this->domainEntitiesNamespace}\\{$entityName};
 use {$this->domainRepositoriesNamespace}\\{$entityName}RepositoryInterface;
-// use Traversable; // Ya no es necesario, ya que devolvemos un array directamente
 
 class {$listUseCaseClassName}
 {
@@ -209,7 +224,7 @@ class {$listUseCaseClassName}
     /**
      * @return {$entityName}[]|array Retorna un array de objetos {$entityName}.
      */
-    public function execute(): array // <<< CAMBIO CRUCIAL: De Traversable a array
+    public function execute(): array
     {
         return \$this->{$repoVarName}->findAll();
     }
