@@ -4,15 +4,15 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 // DECLARACIONES 'use' DEBEN IR AQUÍ (corregido previamente)
+use App\Chatbot\Application\UseCases\Persona\CreatePersonaUseCase;
+use App\Chatbot\Application\UseCases\Persona\GetPersonaByCellphoneUseCase;
+use App\Chatbot\Application\UseCases\Pregunta\CreatePreguntaUseCase;
+use App\Chatbot\Infrastructure\Persistence\MySQL\DatabaseConnection;
+use App\Chatbot\Infrastructure\Persistence\MySQL\PersonaSearch;
+use App\Chatbot\Infrastructure\Persistence\MySQL\PreguntaRepository;
+use App\Chatbot\Infrastructure\Persistence\MySQL\PersonaRepository;
+use App\Chatbot\Infrastructure\AI\AIPromptProcessor;
 use Dotenv\Dotenv;
-use App\Infrastructure\Persistence\MySQL\DatabaseConnection;
-use App\Infrastructure\Persistence\MySQL\PersonaRepository;
-use App\Infrastructure\Persistence\MySQL\PersonaSearch\PersonaSearch;
-use App\Application\UseCases\Persona\CreatePersonaUseCase;
-use App\Application\UseCases\Persona\GetPersonaByCellphoneUseCase;
-use App\Infrastructure\Persistence\MySQL\PreguntaRepository;
-use App\Application\UseCases\Pregunta\CreatePreguntaUseCase;
-use App\Infrastructure\AI\AIPromptProcessor;
 
 
 // --- IMPORTANTE: Se ha eliminado la configuración de errores y el buffering de salida,
