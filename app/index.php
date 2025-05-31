@@ -26,7 +26,7 @@ try {
     $doc->update($filePath2); // de lo contrario tomara el contenido de $filePath2 // sono en caso de no $content.
     //*/
 
-    /*/ Asistente AI para desarrollo.
+    // Asistente AI para desarrollo.
     //*
     $inputFile = __DIR__ . '/../app/Core/StructureBuilder.php';
     $outputFile = __DIR__ . '/../storage/ai_output/response.md';
