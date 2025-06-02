@@ -10,10 +10,18 @@
         <testsuite name="Integration">
             <directory>tests/Integration</directory>
         </testsuite>
-        </testsuites>
+        <testsuite name="PDF Generation Tests">
+            <directory>tests/Adapters/PDF</directory>
+        </testsuite>
+    </testsuites>
     <php>
         <env name="DB_HOST" value="localhost"/>
-        <env name="DB_NAME" value="chatbot_test"/> <env name="DB_USER" value="root"/>
+        <env name="DB_NAME" value="chatbot_test"/>
+        <env name="DB_USER" value="root"/>
         <env name="DB_PASSWORD" value=""/>
+
+        <ini name="display_errors" value="1"/>
+        <ini name="display_startup_errors" value="1"/>
+        <ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED"/>
     </php>
 </phpunit>
