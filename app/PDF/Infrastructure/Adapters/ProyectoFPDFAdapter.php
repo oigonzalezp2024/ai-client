@@ -149,7 +149,7 @@ class ProyectoFPDFAdapter extends FPDF
             }
             // 3. Nivel 3: Líneas de lista tipo "Catálogo de Productos:", "Fase X:", "Gerente de Proyecto (AI Gerente de Desarrollo AI)"
             // Se ajustó la expresión regular para unificar el tratamiento de viñetas y guiones como elementos de lista principales.
-            elseif (preg_match('/^\s*[\*-]?\s*\*{2}(.*?)\*{2}\s*(.*)$/', $trimmedLine, $matches_bold_desc_or_phase)) {
+            elseif (preg_match('/^\s*[\*-]?\s*\*{2}([^:]*?):?\*{2}\s*(.*)$/', $trimmedLine, $matches_bold_desc_or_phase)) {
                 $bold_part = trim($matches_bold_desc_or_phase[1]);
                 $remaining_part = trim($matches_bold_desc_or_phase[2]);
 
