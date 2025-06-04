@@ -1,6 +1,33 @@
 <?php
 include_once '../../modelo/conexion.php';
 $conn = conexion();
+
+class PreguntasFrecuentes
+{
+    private $conn;
+
+    public function __construct($conn = null)
+    {
+        $this->conn = $conn;
+    }
+
+    function findAll()
+    {
+        $conn = $this->conn;
+        $sql = 'SELECT * FROM preguntas_frecuentes ORDER BY id_pregunta_f DESC';
+        $result = mysqli_query($conn, $sql);
+        $preguntasFrecuentes = [];
+        while ($preguntaFrecuente = mysqli_fetch_assoc($result)) {
+            array_push($preguntasFrecuentes, $preguntaFrecuente);
+        }
+        mysqli_close($conn);
+        return $preguntasFrecuentes;
+    }
+}
+
+$data = new PreguntasFrecuentes($conn);
+$rows = $data->findAll();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,7 +40,7 @@ $conn = conexion();
 
 <body>
     <div style="margin-top: 90px; text-align: center;">
-        <h2>Personas</h2>
+        <h2>Preguntas frecuentes</h2>
     </div>
     <button class="btn navbar-left"
         data-toggle="modal"
@@ -34,18 +61,16 @@ $conn = conexion();
             </thead>
             <tbody>
                 <?php
-                $sql = 'SELECT * FROM preguntas_frecuentes ORDER BY id_pregunta_f DESC';
-                $result = mysqli_query($conn, $sql);
-                while ($fila = mysqli_fetch_assoc($result)) {
-                    $datos = $fila['id_pregunta_f'] . "||" .
-                        $fila['su_pregunta'] . "||" .
-                        $fila['respuesta'] . "||" .
-                        $fila['usuario_id'];
+                foreach ($rows as $row) {
+                    $datos = $row['id_pregunta_f'] . "||" .
+                        $row['su_pregunta'] . "||" .
+                        $row['respuesta'] . "||" .
+                        $row['usuario_id'];
                 ?>
                     <tr>
                         <td style="text-align:right;">
                             <a target="_blank" href="../pdf/pdff_preguntas_frecuentes_id.php"><i class="btn glyphicon glyphicon-download-alt"></i></a>
-                            <a href="./preguntas_frecuentes_id.php?id=<?php echo $fila['id_pregunta_f']; ?>"><i class="btn glyphicon glyphicon-eye-open"></i></a>
+                            <a href="./preguntas_frecuentes_id.php?id=<?php echo $row['id_pregunta_f']; ?>"><i class="btn glyphicon glyphicon-eye-open"></i></a>
                             <button class="btn glyphicon glyphicon-pencil"
                                 data-toggle="modal"
                                 data-target="#modalEdicion"
@@ -53,16 +78,16 @@ $conn = conexion();
                             </button>
 
                             <button class="btn glyphicon glyphicon-remove"
-                                onclick="preguntarSiNo('<?php echo $fila['id_pregunta_f']; ?>')">
+                                onclick="preguntarSiNo('<?php echo $row['id_pregunta_f']; ?>')">
                             </button>
                         </td>
-                        <td><?php echo $fila['id_pregunta_f']; ?></td>
-                        <td><?php echo $fila['su_pregunta']; ?></td>
-                        <td><?php echo $fila['respuesta']; ?></td>
-                        <td><?php echo $fila['usuario_id']; ?></td>
+                        <td><?php echo $row['id_pregunta_f']; ?></td>
+                        <td><?php echo $row['su_pregunta']; ?></td>
+                        <td><?php echo $row['respuesta']; ?></td>
+                        <td><?php echo $row['usuario_id']; ?></td>
                         <td>
                             <a target="_blank" href="../pdf/pdff_preguntas_frecuentes_id.php"><i class="btn glyphicon glyphicon-download-alt"></i></a>
-                            <a href="./preguntas_frecuentes_id.php?id=<?php echo $fila['id_pregunta_f']; ?>"><i class="btn glyphicon glyphicon-eye-open"></i></a>
+                            <a href="./preguntas_frecuentes_id.php?id=<?php echo $row['id_pregunta_f']; ?>"><i class="btn glyphicon glyphicon-eye-open"></i></a>
                             <button class="btn glyphicon glyphicon-pencil"
                                 data-toggle="modal"
                                 data-target="#modalEdicion"
@@ -70,7 +95,7 @@ $conn = conexion();
                             </button>
 
                             <button class="btn glyphicon glyphicon-remove"
-                                onclick="preguntarSiNo('<?php echo $fila['id_pregunta_f']; ?>')">
+                                onclick="preguntarSiNo('<?php echo $row['id_pregunta_f']; ?>')">
                             </button>
                         </td>
                     </tr>
@@ -85,4 +110,3 @@ $conn = conexion();
 </html>
 <?php
 mysqli_close($conn);
-?>
