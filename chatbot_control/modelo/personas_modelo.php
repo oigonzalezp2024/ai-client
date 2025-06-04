@@ -36,11 +36,7 @@ elseif($accion == "modificar"){
           activo = '$activo'
           WHERE id_persona = '$id'";
 
-    $consulta = mysqli_query($conn, $sql);
-    if($consulta = true)
-    {
-        echo $id;
-    }
+    echo $consulta = mysqli_query($conn, $sql);
 }
 
 elseif($accion == "borrar"){

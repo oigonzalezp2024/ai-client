@@ -1,6 +1,33 @@
 <?php
 include_once '../../modelo/conexion.php';
 $conn = conexion();
+
+class Personas
+{
+    private $conn;
+
+    public function __construct($conn = null)
+    {
+        $this->conn = $conn;
+    }
+
+    function findAll()
+    {
+        $conn = $this->conn;
+        $sql = 'SELECT * FROM personas ORDER BY id_persona DESC';
+        $result = mysqli_query($conn, $sql);
+        $personas = [];
+        while ($persona = mysqli_fetch_assoc($result)) {
+            array_push($personas, $persona);
+        }
+        mysqli_close($conn);
+        return $personas;
+    }
+}
+
+$data = new Personas($conn);
+$rows = $data->findAll();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,43 +59,36 @@ $conn = conexion();
             </thead>
             <tbody>
                 <?php
-                $sql = 'SELECT * FROM personas ORDER BY id_persona DESC';
-                $result = mysqli_query($conn, $sql);
-                while ($fila = mysqli_fetch_assoc($result)) {
-                    $datos = $fila['id_persona'] . "||" .
-                        $fila['nombre'] . "||" .
-                        $fila['celular'] . "||" .
-                        $fila['activo'];
+                foreach ($rows as $row) {
+                    $persona = $row['id_persona'] . "||" .
+                        $row['nombre'] . "||" .
+                        $row['celular'] . "||" .
+                        $row['activo'];
                 ?>
                     <tr>
                         <td style="text-align:right;">
-                            <a target="_blank" href="../pdf/pdff_personas_id.php"><i class="btn glyphicon glyphicon-download-alt"></i></a>
-                            <a href="./personas_id.php?id=<?php echo $fila['id_persona']; ?>"><i class="btn glyphicon glyphicon-eye-open"></i></a>
                             <button class="btn glyphicon glyphicon-pencil"
                                 data-toggle="modal"
                                 data-target="#modalEdicion"
-                                onclick="agregaform('<?php echo $datos; ?>')">
+                                onclick="agregaform('<?php echo $persona; ?>')">
                             </button>
-
                             <button class="btn glyphicon glyphicon-remove"
-                                onclick="preguntarSiNo('<?php echo $fila['id_persona']; ?>')">
+                                onclick="preguntarSiNo('<?php echo $row['id_persona']; ?>')">
                             </button>
                         </td>
-                        <td><?php echo $fila['id_persona']; ?></td>
-                        <td><?php echo $fila['nombre']; ?></td>
-                        <td><?php echo $fila['celular']; ?></td>
-                        <td><?php echo $fila['activo']; ?></td>
+                        <td><?php echo $row['id_persona']; ?></td>
+                        <td><?php echo $row['nombre']; ?></td>
+                        <td><?php echo $row['celular']; ?></td>
+                        <td><?php echo $row['activo']; ?></td>
                         <td>
-                            <a target="_blank" href="../pdf/pdff_personas_id.php"><i class="btn glyphicon glyphicon-download-alt"></i></a>
-                            <a href="./personas_id.php?id=<?php echo $fila['id_persona']; ?>"><i class="btn glyphicon glyphicon-eye-open"></i></a>
                             <button class="btn glyphicon glyphicon-pencil"
                                 data-toggle="modal"
                                 data-target="#modalEdicion"
-                                onclick="agregaform('<?php echo $datos; ?>')">
+                                onclick="agregaform('<?php echo $persona; ?>')">
                             </button>
 
                             <button class="btn glyphicon glyphicon-remove"
-                                onclick="preguntarSiNo('<?php echo $fila['id_persona']; ?>')">
+                                onclick="preguntarSiNo('<?php echo $row['id_persona']; ?>')">
                             </button>
                         </td>
                     </tr>
@@ -79,8 +99,4 @@ $conn = conexion();
         </table>
     </div>
 </body>
-
 </html>
-<?php
-mysqli_close($conn);
-?>
