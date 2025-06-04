@@ -52,10 +52,12 @@ $rows = $data->findAll();
             <thead>
                 <tr>
                     <th></th>
+                    <th></th>
                     <th>id_pregunta_f</th>
                     <th>su_pregunta</th>
                     <th>respuesta</th>
                     <th>usuario_id</th>
+                    <th></th>
                     <th></th>
                 </tr>
             </thead>
@@ -69,14 +71,13 @@ $rows = $data->findAll();
                 ?>
                     <tr>
                         <td style="text-align:right;">
-                            <a target="_blank" href="../pdf/pdff_preguntas_frecuentes_id.php"><i class="btn glyphicon glyphicon-download-alt"></i></a>
-                            <a href="./preguntas_frecuentes_id.php?id=<?php echo $row['id_pregunta_f']; ?>"><i class="btn glyphicon glyphicon-eye-open"></i></a>
                             <button class="btn glyphicon glyphicon-pencil"
                                 data-toggle="modal"
                                 data-target="#modalEdicion"
                                 onclick="agregaform('<?php echo $datos; ?>')">
                             </button>
-
+                        </td>
+                        <td>
                             <button class="btn glyphicon glyphicon-remove"
                                 onclick="preguntarSiNo('<?php echo $row['id_pregunta_f']; ?>')">
                             </button>
@@ -86,14 +87,13 @@ $rows = $data->findAll();
                         <td><?php echo $row['respuesta']; ?></td>
                         <td><?php echo $row['usuario_id']; ?></td>
                         <td>
-                            <a target="_blank" href="../pdf/pdff_preguntas_frecuentes_id.php"><i class="btn glyphicon glyphicon-download-alt"></i></a>
-                            <a href="./preguntas_frecuentes_id.php?id=<?php echo $row['id_pregunta_f']; ?>"><i class="btn glyphicon glyphicon-eye-open"></i></a>
                             <button class="btn glyphicon glyphicon-pencil"
                                 data-toggle="modal"
                                 data-target="#modalEdicion"
                                 onclick="agregaform('<?php echo $datos; ?>')">
                             </button>
-
+                        </td>
+                        <td>
                             <button class="btn glyphicon glyphicon-remove"
                                 onclick="preguntarSiNo('<?php echo $row['id_pregunta_f']; ?>')">
                             </button>
@@ -108,5 +108,3 @@ $rows = $data->findAll();
 </body>
 
 </html>
-<?php
-mysqli_close($conn);
